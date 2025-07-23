@@ -4,6 +4,13 @@
  */
 package mx.penguinapple.nb.lista.de.tareas;
 
+import java.awt.Color;
+import java.awt.Image;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
+import mx.penguinapple.nb.lista.de.tareas.SQLiteDatabase;
+
 /**
  *
  * @author Reindhart
@@ -18,6 +25,26 @@ public class Login extends javax.swing.JFrame {
     public Login() {
         setUndecorated(true);
         initComponents();
+        this.lblValidation.setVisible(false);
+        try{
+            Image img = new ImageIcon(getClass().getResource("/img/wia_img_check-0.png")).getImage();
+            this.setIconImage(img);
+        }
+        catch (Exception e){
+            System.out.println("chanfles");
+            System.out.println(e);
+        }
+    }
+    
+    public void slp(JLabel label) {
+        new Thread(() -> {
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            SwingUtilities.invokeLater(() -> label.setVisible(false));
+        }).start();
     }
 
     /**
@@ -37,7 +64,8 @@ public class Login extends javax.swing.JFrame {
         txtUser = new javax.swing.JTextField();
         txtPwd = new javax.swing.JPasswordField();
         lblLogin = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
+        lblValidation = new javax.swing.JLabel();
+        lblSingIn = new javax.swing.JLabel();
         btnExit = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
@@ -50,11 +78,9 @@ public class Login extends javax.swing.JFrame {
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        lblUser.setForeground(new java.awt.Color(0, 0, 0));
         lblUser.setText("Usuario");
         jPanel2.add(lblUser, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 140, -1, -1));
 
-        lblPwd.setForeground(new java.awt.Color(0, 0, 0));
         lblPwd.setText("Contraseña");
         jPanel2.add(lblPwd, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 190, -1, -1));
 
@@ -65,7 +91,7 @@ public class Login extends javax.swing.JFrame {
                 btnAcceptActionPerformed(evt);
             }
         });
-        jPanel2.add(btnAccept, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 240, -1, -1));
+        jPanel2.add(btnAccept, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 260, -1, -1));
 
         txtUser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -76,20 +102,35 @@ public class Login extends javax.swing.JFrame {
         jPanel2.add(txtPwd, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 190, 190, -1));
 
         lblLogin.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
-        lblLogin.setForeground(new java.awt.Color(0, 0, 0));
         lblLogin.setText("INICIA SESIÓN");
         jPanel2.add(lblLogin, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 50, -1, -1));
 
-        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(204, 0, 0));
-        jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel1.setText("Usuario o Contraseña incorrectos");
-        jPanel2.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(70, 100, 200, -1));
+        lblValidation.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        lblValidation.setForeground(new java.awt.Color(204, 0, 0));
+        lblValidation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblValidation.setText("Usuario o Contraseña incorrectos");
+        jPanel2.add(lblValidation, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 100, 310, -1));
+
+        lblSingIn.setForeground(new java.awt.Color(51, 0, 255));
+        lblSingIn.setText("Registrate aquí");
+        lblSingIn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        lblSingIn.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                lblSingInMouseClicked(evt);
+            }
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                lblSingInMouseEntered(evt);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                lblSingInMouseExited(evt);
+            }
+        });
+        jPanel2.add(lblSingIn, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 300, -1, -1));
 
         jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 90, 310, 330));
 
         btnExit.setBackground(new java.awt.Color(204, 204, 204));
-        btnExit.setIcon(new javax.swing.ImageIcon("E:\\Mio\\Escuela\\Programacion Internet\\Lista-Tareas-JS\\msg_error-0.png")); // NOI18N
+        btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/msg_error-0.png")));
         btnExit.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
         btnExit.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnExit.addActionListener(new java.awt.event.ActionListener() {
@@ -115,8 +156,9 @@ public class Login extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAcceptActionPerformed
-        if (txtUser.getText().isBlank()){
-            System.out.println("Holis");
+        if (!SQLiteDatabase.buscarUsuario(this.txtUser.getText(), this.txtPwd.getPassword()) || txtUser.getText().isBlank()){
+            this.lblValidation.setVisible(true);
+            slp(this.lblValidation);
         } else {
             System.out.println("Crayolis");
         }
@@ -130,6 +172,18 @@ public class Login extends javax.swing.JFrame {
         // TODO add your handling code here:
     }//GEN-LAST:event_txtUserActionPerformed
 
+    private void lblSingInMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblSingInMouseEntered
+        this.setForeground(new Color(0, 0, 153));
+    }//GEN-LAST:event_lblSingInMouseEntered
+
+    private void lblSingInMouseExited(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblSingInMouseExited
+        this.setForeground(new Color(51, 0, 255));
+    }//GEN-LAST:event_lblSingInMouseExited
+
+    private void lblSingInMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblSingInMouseClicked
+        // TODO add your handling code here:
+    }//GEN-LAST:event_lblSingInMouseClicked
+
     /**
      * @param args the command line arguments
      */
@@ -140,12 +194,13 @@ public class Login extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAccept;
     private javax.swing.JButton btnExit;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel lblLogin;
     private javax.swing.JLabel lblPwd;
+    private javax.swing.JLabel lblSingIn;
     private javax.swing.JLabel lblUser;
+    private javax.swing.JLabel lblValidation;
     private javax.swing.JPasswordField txtPwd;
     private javax.swing.JTextField txtUser;
     // End of variables declaration//GEN-END:variables

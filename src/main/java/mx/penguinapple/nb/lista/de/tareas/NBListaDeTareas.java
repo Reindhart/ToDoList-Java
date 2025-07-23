@@ -3,6 +3,7 @@
  */
 
 package mx.penguinapple.nb.lista.de.tareas;
+import static mx.penguinapple.nb.lista.de.tareas.SQLiteDatabase.crearTablas;
 
 /**
  *
@@ -11,6 +12,7 @@ package mx.penguinapple.nb.lista.de.tareas;
 public class NBListaDeTareas {
 
     public static void main(String[] args) {
+        crearTablas();
         Login.main(args);
     }
 }
