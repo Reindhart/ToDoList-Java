@@ -5,6 +5,7 @@
 package mx.penguinapple.nb.lista.de.tareas;
 
 import java.sql.*;
+import org.mindrot.jbcrypt.BCrypt;
 
 /**
  *
@@ -20,9 +21,6 @@ public class SQLiteDatabase {
         crearTablas();
     }
     
-    /**
-     * Crea la base de datos SQLite
-     */
     public static void crearBaseDatos() {
         try (Connection conn = DriverManager.getConnection(DATABASE_URL)) {
             if (conn != null) {
@@ -34,9 +32,6 @@ public class SQLiteDatabase {
         }
     }
     
-    /**
-     * Crea las tablas en la base de datos
-     */
     public static void crearTablas() {
         // SQL para crear una tabla de ejemplo
         String sqlUsuarios = """
@@ -70,7 +65,6 @@ public class SQLiteDatabase {
             // Crear tablas
             stmt.execute(sqlUsuarios);
             System.out.println("Tabla 'usuarios' creada");
-            
             stmt.execute(sqlTareas);
             System.out.println("Tabla 'tareas' creada con foreign key");
             
@@ -79,20 +73,46 @@ public class SQLiteDatabase {
         }
     }
     
-    public static boolean insertarUsuario(String Usuario, char[] Contrasena){
+    
+    
+    public static boolean buscarUsuario(String usuario){
         
+        String sql = "SELECT 1 FROM usuarios WHERE usuario = ? LIMIT 1";
+                
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
             Statement stmt = conn.createStatement()) {
-            String Pass = new String(Contrasena);
-            
-            
-            
-            String sql = "INSERT INTO usuarios VALUES (" + Usuario + ", " + Pass + ")";
-            
+            if (stmt.execute(sql)){
+                return true;
+            }
         } catch (SQLException e) {
-            System.out.println(e);
-        }
+            return false;
+        }        
+        return false;
+    }
+    
+    public static boolean insertarUsuario(String usuario, char[] contrasena){
+        String sql = "INSERT INTO usuarios(usuario, contrasena) VALUES(?, ?)";
+        String passwordString = null;
         
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            passwordString = new String(contrasena);
+            String hashedPassword = BCrypt.hashpw(passwordString, BCrypt.gensalt());
+
+            pstmt.setString(1, usuario);
+            pstmt.setString(2, hashedPassword);
+            
+            return pstmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            if (e.getMessage().contains("UNIQUE constraint failed")) {
+                System.out.println("El nombre de usuario ya existe");
+                return false;
+            } 
+        } finally {
+            if (passwordString != null) passwordString = null;
+        }
         return true;
     }
     

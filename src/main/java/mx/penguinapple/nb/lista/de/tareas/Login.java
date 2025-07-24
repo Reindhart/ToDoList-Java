@@ -7,7 +7,10 @@ package mx.penguinapple.nb.lista.de.tareas;
 import java.awt.Color;
 import java.awt.Image;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import mx.penguinapple.nb.lista.de.tareas.SQLiteDatabase;
 
@@ -25,7 +28,7 @@ public class Login extends javax.swing.JFrame {
     public Login() {
         setUndecorated(true);
         initComponents();
-        this.lblValidation.setVisible(false);
+        this.lblErrorMsg.setVisible(false);
         try{
             Image img = new ImageIcon(getClass().getResource("/img/wia_img_check-0.png")).getImage();
             this.setIconImage(img);
@@ -36,7 +39,7 @@ public class Login extends javax.swing.JFrame {
         }
     }
     
-    public void slp(JLabel label) {
+    public static void slp(JLabel label) {
         new Thread(() -> {
             try {
                 Thread.sleep(3000);
@@ -62,9 +65,9 @@ public class Login extends javax.swing.JFrame {
         lblPwd = new javax.swing.JLabel();
         btnAccept = new javax.swing.JButton();
         txtUser = new javax.swing.JTextField();
-        txtPwd = new javax.swing.JPasswordField();
+        pwdPassword = new javax.swing.JPasswordField();
         lblLogin = new javax.swing.JLabel();
-        lblValidation = new javax.swing.JLabel();
+        lblErrorMsg = new javax.swing.JLabel();
         lblSingIn = new javax.swing.JLabel();
         btnExit = new javax.swing.JButton();
 
@@ -99,17 +102,17 @@ public class Login extends javax.swing.JFrame {
             }
         });
         jPanel2.add(txtUser, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 140, 190, -1));
-        jPanel2.add(txtPwd, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 190, 190, -1));
+        jPanel2.add(pwdPassword, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 190, 190, -1));
 
         lblLogin.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         lblLogin.setText("INICIA SESIÓN");
         jPanel2.add(lblLogin, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 50, -1, -1));
 
-        lblValidation.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        lblValidation.setForeground(new java.awt.Color(204, 0, 0));
-        lblValidation.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        lblValidation.setText("Usuario o Contraseña incorrectos");
-        jPanel2.add(lblValidation, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 100, 310, -1));
+        lblErrorMsg.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        lblErrorMsg.setForeground(new java.awt.Color(204, 0, 0));
+        lblErrorMsg.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        lblErrorMsg.setText("mensaje");
+        jPanel2.add(lblErrorMsg, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 100, 310, -1));
 
         lblSingIn.setForeground(new java.awt.Color(51, 0, 255));
         lblSingIn.setText("Registrate aquí");
@@ -138,7 +141,7 @@ public class Login extends javax.swing.JFrame {
                 btnExitActionPerformed(evt);
             }
         });
-        jPanel1.add(btnExit, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 10, 40, -1));
+        jPanel1.add(btnExit, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 10, 40, 40));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -156,9 +159,19 @@ public class Login extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAcceptActionPerformed
-        if (!SQLiteDatabase.buscarUsuario(this.txtUser.getText(), this.txtPwd.getPassword()) || txtUser.getText().isBlank()){
-            this.lblValidation.setVisible(true);
-            slp(this.lblValidation);
+        JTextField user = this.txtUser;
+        JPasswordField pwd = this.pwdPassword;
+        JLabel errorMsg = this.lblErrorMsg;
+        
+        if(user.getText().isBlank() || pwd.getPassword().length == 0){
+            errorMsg.setText("Porfavor rellene ambos campos");
+            errorMsg.setVisible(true);
+            slp(this.lblErrorMsg);
+        }
+        if (!SQLiteDatabase.buscarUsuario(user.getText(), pwd.getPassword())){
+            errorMsg.setText("Usuario o contraseña incorrectos");
+            errorMsg.setVisible(true);
+            slp(this.lblErrorMsg);
         } else {
             System.out.println("Crayolis");
         }
@@ -181,7 +194,8 @@ public class Login extends javax.swing.JFrame {
     }//GEN-LAST:event_lblSingInMouseExited
 
     private void lblSingInMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lblSingInMouseClicked
-        // TODO add your handling code here:
+        JFrame singin = new SignIn();
+        singin.setVisible(true);
     }//GEN-LAST:event_lblSingInMouseClicked
 
     /**
@@ -196,12 +210,12 @@ public class Login extends javax.swing.JFrame {
     private javax.swing.JButton btnExit;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JLabel lblErrorMsg;
     private javax.swing.JLabel lblLogin;
     private javax.swing.JLabel lblPwd;
     private javax.swing.JLabel lblSingIn;
     private javax.swing.JLabel lblUser;
-    private javax.swing.JLabel lblValidation;
-    private javax.swing.JPasswordField txtPwd;
+    private javax.swing.JPasswordField pwdPassword;
     private javax.swing.JTextField txtUser;
     // End of variables declaration//GEN-END:variables
 }
