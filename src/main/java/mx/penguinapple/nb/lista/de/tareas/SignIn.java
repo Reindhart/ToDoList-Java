@@ -4,6 +4,7 @@
  */
 package mx.penguinapple.nb.lista.de.tareas;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import static mx.penguinapple.nb.lista.de.tareas.SQLiteDatabase.insertarUsuario;
@@ -45,11 +46,12 @@ public class SignIn extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setAlwaysOnTop(true);
-        getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 3, true));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
+        txtUserSingIn.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
         txtUserSingIn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtUserSingInActionPerformed(evt);
@@ -58,6 +60,7 @@ public class SignIn extends javax.swing.JFrame {
         jPanel1.add(txtUserSingIn, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 50, 210, -1));
 
         btnAcceptSingIn.setText("Aceptar");
+        btnAcceptSingIn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnAcceptSingIn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAcceptSingInActionPerformed(evt);
@@ -65,13 +68,15 @@ public class SignIn extends javax.swing.JFrame {
         });
         jPanel1.add(btnAcceptSingIn, new org.netbeans.lib.awtextra.AbsoluteConstraints(230, 110, -1, -1));
 
-        btnCLoseSingIn.setText("X");
+        btnCLoseSingIn.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/msg_error-0.png")));
+        btnCLoseSingIn.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        btnCLoseSingIn.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnCLoseSingIn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnCLoseSingInActionPerformed(evt);
             }
         });
-        jPanel1.add(btnCLoseSingIn, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 10, 30, -1));
+        jPanel1.add(btnCLoseSingIn, new org.netbeans.lib.awtextra.AbsoluteConstraints(280, 10, -1, -1));
 
         lblUserSignIn.setText("Usuario");
         jPanel1.add(lblUserSignIn, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 50, -1, -1));
@@ -86,7 +91,7 @@ public class SignIn extends javax.swing.JFrame {
         jPanel1.add(lblErrorMsg, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 20, 320, -1));
         jPanel1.add(pwdPasswordSingIn, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 80, 210, -1));
 
-        getContentPane().add(jPanel1);
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 330, 160));
 
         pack();
         setLocationRelativeTo(null);
@@ -98,23 +103,26 @@ public class SignIn extends javax.swing.JFrame {
 
     private void btnAcceptSingInActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAcceptSingInActionPerformed
         
-        JLabel errorMsg = this.lblErrorMsg;
-        JTextField user = this.txtUserSingIn;
-        JPasswordField pass = this.pwdPasswordSingIn;
+        JLabel errorMsg = lblErrorMsg;
+        String username = txtUserSingIn.getText();
+        char[] password = pwdPasswordSingIn.getPassword();
         
-        if(user.getText().isBlank() || pass.getPassword().length == 0){
+        if(txtUserSingIn.getText().isBlank() || pwdPasswordSingIn.getPassword().length == 0){
             errorMsg.setText("Porfavor llene ambos campos");
             errorMsg.setVisible(true);
-            user.setText("");
-            pass.setText("");
             slp(errorMsg);
         }
-        if(!insertarUsuario(user.getText(), pass.getPassword())){
+        
+        txtUserSingIn.setText("");
+        pwdPasswordSingIn.setText("");
+        btnAcceptSingIn.setEnabled(false);
+
+        if(!insertarUsuario(username, password)){
             errorMsg.setText("El usuario ya existe");
             errorMsg.setVisible(true);
-            user.setText("");
-            pass.setText("");
             slp(errorMsg);
+        } else {
+            dispose();
         }
     }//GEN-LAST:event_btnAcceptSingInActionPerformed
 

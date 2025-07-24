@@ -14,9 +14,11 @@ public class Tareas extends javax.swing.JFrame {
 
     /**
      * Creates new form Tareas
+     * @param datosUsuario
      */
-    public Tareas() {
+    public Tareas(String[] datosUsuario) {
         initComponents();
+        lblUser.setText(datosUsuario[1]);
     }
 
     /**
@@ -99,6 +101,7 @@ public class Tareas extends javax.swing.JFrame {
         getContentPane().add(btnAddGroup, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 440, -1, -1));
 
         pack();
+        setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAddTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddTaskActionPerformed
@@ -109,7 +112,7 @@ public class Tareas extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(() -> new Tareas().setVisible(true));
+        java.awt.EventQueue.invokeLater(() -> new Tareas(args).setVisible(true));
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

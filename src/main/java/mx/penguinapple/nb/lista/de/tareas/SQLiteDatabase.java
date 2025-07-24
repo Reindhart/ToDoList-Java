@@ -116,19 +116,31 @@ public class SQLiteDatabase {
         return true;
     }
     
-    public static boolean buscarUsuario(String Usuario, char[] Contrasena){
-        
-        String sql = "SELECT * FROM usuarios WHERE username = ? AND password = ?";
-        
+    public static String[] rsUsuario(String usuario, char[] contrasena) {
+        String sql = "SELECT * FROM usuarios WHERE usuario = ?";
+
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
-            Statement stmt = conn.createStatement()) {
-                
-            
-            
-        } catch (SQLException e){
-            
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, usuario);
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    String storedHash = rs.getString("contrasena");
+
+                    if (BCrypt.checkpw(new String(contrasena), storedHash)) {
+                        String[] datosUsuario = {
+                            rs.getString("id"),
+                            rs.getString("usuario")
+                        };
+                        return datosUsuario;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-        
-        return true;
+        return null;
     }
+
 }
