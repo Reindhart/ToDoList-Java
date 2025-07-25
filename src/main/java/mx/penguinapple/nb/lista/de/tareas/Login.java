@@ -29,14 +29,8 @@ public class Login extends javax.swing.JFrame {
         setUndecorated(true);
         initComponents();
         lblErrorMsg.setVisible(false);
-        try{
-            Image img = new ImageIcon(getClass().getResource("/img/wia_img_check-0.png")).getImage();
-            this.setIconImage(img);
-        }
-        catch (Exception e){
-            System.out.println("chanfles");
-            System.out.println(e);
-        }
+        Image img = new ImageIcon(getClass().getResource("/img/wia_img_check-0.png")).getImage();
+        this.setIconImage(img);        
     }
     
     public static void slp(JLabel label) {

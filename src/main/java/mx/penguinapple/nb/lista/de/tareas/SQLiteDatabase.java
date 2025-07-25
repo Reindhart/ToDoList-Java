@@ -5,6 +5,7 @@
 package mx.penguinapple.nb.lista.de.tareas;
 
 import java.sql.*;
+import javax.swing.DefaultListModel;
 import org.mindrot.jbcrypt.BCrypt;
 
 /**
@@ -24,8 +25,7 @@ public class SQLiteDatabase {
     public static void crearBaseDatos() {
         try (Connection conn = DriverManager.getConnection(DATABASE_URL)) {
             if (conn != null) {
-                System.out.println("Base de datos creada exitosamente.");
-                System.out.println("Ruta: " + System.getProperty("user.dir") + "/todolist.db");
+                System.out.println("Ruta DB: " + System.getProperty("user.dir") + "/todolist.db");
             }
         } catch (SQLException e) {
             System.err.println("Error al crear la base de datos: " + e.getMessage());
@@ -41,11 +41,23 @@ public class SQLiteDatabase {
                 contrasena TEXT NOT NULL
             );
             """;
-
+        
+        String sqlGrupos = """
+            CREATE TABLE IF NOT EXISTS grupos (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                usuario_id INTEGER NOT NULL,
+                nombre VARCHAR(50) NOT NULL,
+                FOREIGN KEY (usuario_id) REFERENCES usuarios(id) 
+                    ON DELETE CASCADE 
+                    ON UPDATE CASCADE
+            );
+            """;
+        
         String sqlTareas = """
             CREATE TABLE IF NOT EXISTS tareas (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 usuario_id INTEGER NOT NULL,
+                grupo_id INTEGER NOT NULL,
                 tarea TEXT NOT NULL,
                 completado BOOLEAN DEFAULT FALSE,
                 fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -53,7 +65,10 @@ public class SQLiteDatabase {
                 fecha_limite DATETIME NULL,
                 FOREIGN KEY (usuario_id) REFERENCES usuarios(id) 
                     ON DELETE CASCADE 
-                    ON UPDATE CASCADE
+                    ON UPDATE CASCADE,
+                FOREIGN KEY (grupo_id) REFERENCES grupos(id)
+                                    ON DELETE CASCADE 
+                                    ON UPDATE CASCADE
             );
             """;
 
@@ -64,16 +79,13 @@ public class SQLiteDatabase {
             
             // Crear tablas
             stmt.execute(sqlUsuarios);
-            System.out.println("Tabla 'usuarios' creada");
+            stmt.execute(sqlGrupos);
             stmt.execute(sqlTareas);
-            System.out.println("Tabla 'tareas' creada con foreign key");
             
         } catch (SQLException e) {
             System.err.println("Error al crear las tablas: " + e.getMessage());
         }
     }
-    
-    
     
     public static boolean buscarUsuario(String usuario){
         
@@ -142,5 +154,68 @@ public class SQLiteDatabase {
         }
         return null;
     }
+    
+    
+    public static DefaultListModel<String> obtenerGrupos(String[] datosUsuario){
+        String sql = "SELECT * FROM grupos WHERE usuario_id = ?";
+        DefaultListModel<String> model = new DefaultListModel<>();
+        
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, datosUsuario[0]);
+  
+            try (ResultSet rs = pstmt.executeQuery()){
+                while (rs.next()) {                   
+                    String nombreGrupo = rs.getString("nombre");
+                    model.addElement(nombreGrupo);
+                }
+                
+                return model;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new DefaultListModel<>();
+        }
+    }
+    
+    public static DefaultListModel<String> obtenerTareas(String[] datosUsuario){
+        String sql = "SELECT * FROM grupos WHERE usuario_id = ?";
+        DefaultListModel<String> model = new DefaultListModel<>();
+        
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setString(1, datosUsuario[0]);
+  
+            try (ResultSet rs = pstmt.executeQuery()){
+                while (rs.next()) {                   
+                    String nombreGrupo = rs.getString("nombre");
+                    model.addElement(nombreGrupo);
+                }
+                
+                return model;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return new DefaultListModel<>();
+        }
+    }
+    
+    public static boolean insertarGrupo(String usuario_id, String nombre){
+        String sql = "INSERT INTO grupos(usuario_id, nombre) VALUES(?, ?)";
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
+            pstmt.setString(1, usuario_id);
+            pstmt.setString(2, nombre);
+            pstmt.executeUpdate();
+            
+            return true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }        
+    }
 }
