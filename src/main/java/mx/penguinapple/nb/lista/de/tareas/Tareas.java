@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package mx.penguinapple.nb.lista.de.tareas;
+import mx.penguinapple.nb.lista.de.tareas.Grupos;
 
 import java.awt.Image;
 import javax.swing.DefaultListModel;
