@@ -3,22 +3,24 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package mx.penguinapple.nb.lista.de.tareas;
-import mx.penguinapple.nb.lista.de.tareas.Grupos;
+import mx.penguinapple.nb.lista.de.tareas.Grupo;
 
 import java.awt.Image;
+import java.sql.ResultSet;
+import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
-import javax.swing.ListModel;
 /**
  *
  * @author Reindhart
  */
 public class Tareas extends javax.swing.JFrame {
     
-    private static final java.util.logging.Logger logger = java.util.logging.Logger.getLogger(Tareas.class.getName());
-    private String[] datosUsuario;
-    private String lastSelectedValue = "";
+    private final String[] datosUsuario;
+    
+    private Grupo lastSelectedValue;
 
     /**
      * Creates new form Tareas
@@ -28,9 +30,14 @@ public class Tareas extends javax.swing.JFrame {
         initComponents();
         this.datosUsuario = datosUsuario;
         lblUser.setText(datosUsuario[1]);
+        this.setTitle("Tareas de " + datosUsuario[1]);
         Image img = new ImageIcon(getClass().getResource("/img/wia_img_check-0.png")).getImage();
         this.setIconImage(img);
         cargarGrupos(datosUsuario);
+        btnAddTask.setEnabled(false);
+        btnAddTask.setVisible(false);
+        btnDeleteGroup.setEnabled(false);
+        btnDeleteGroup.setVisible(false);
     }
 
     /**
@@ -55,6 +62,7 @@ public class Tareas extends javax.swing.JFrame {
         tblToDoList = new javax.swing.JTable();
         lblUser = new javax.swing.JLabel();
         btnAddGroup = new javax.swing.JButton();
+        btnDeleteGroup = new javax.swing.JButton();
 
         jList1.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -77,7 +85,7 @@ public class Tareas extends javax.swing.JFrame {
                 btnAddTaskActionPerformed(evt);
             }
         });
-        jPanel1.add(btnAddTask, new org.netbeans.lib.awtextra.AbsoluteConstraints(560, 440, -1, -1));
+        jPanel1.add(btnAddTask, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 440, -1, -1));
 
         lblGroups.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         lblGroups.setText("Grupos");
@@ -87,7 +95,7 @@ public class Tareas extends javax.swing.JFrame {
         lblTasks.setText("Tareas");
         jPanel1.add(lblTasks, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 20, -1, -1));
 
-        lstGroupList.setModel(new DefaultListModel<String>());
+        lstGroupList.setModel(new DefaultListModel<Grupo>());
         lstGroupList.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 lstGroupListMouseClicked(evt);
@@ -116,12 +124,12 @@ public class Tareas extends javax.swing.JFrame {
         tblToDoList.setColumnSelectionAllowed(true);
         spToDoList.setViewportView(tblToDoList);
 
-        jPanel1.add(spToDoList, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 50, 480, 370));
+        jPanel1.add(spToDoList, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 50, 660, 370));
 
         lblUser.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
         lblUser.setText("Usuario");
         lblUser.setToolTipText("");
-        jPanel1.add(lblUser, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 20, 420, -1));
+        jPanel1.add(lblUser, new org.netbeans.lib.awtextra.AbsoluteConstraints(480, 20, 360, -1));
 
         btnAddGroup.setText("Nuevo Grupo");
         btnAddGroup.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -132,45 +140,54 @@ public class Tareas extends javax.swing.JFrame {
         });
         jPanel1.add(btnAddGroup, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 440, -1, -1));
 
-        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 690, 490));
+        btnDeleteGroup.setText("Borrar Grupo");
+        jPanel1.add(btnDeleteGroup, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 440, -1, -1));
+
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 860, 490));
 
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAddTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddTaskActionPerformed
-        // TODO add your handling code here:
+        JFrame newtask = new NewTask(lastSelectedValue);
+        newtask.setVisible(true);
     }//GEN-LAST:event_btnAddTaskActionPerformed
 
     private void btnAddGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddGroupActionPerformed
-        String nombre = JOptionPane.showInputDialog("Escriba el nombre del grupo");
-        lstGroupList.setModel(new DefaultListModel<>());
+        String nombreGrupo = JOptionPane.showInputDialog("Escriba el nombre del grupo");
         
-        if(SQLiteDatabase.insertarGrupo(datosUsuario[0], nombre)){
-            
-            DefaultListModel<String> model = (DefaultListModel<String>) lstGroupList.getModel();
-            model.addElement(nombre);
-            
-            JOptionPane.showMessageDialog(null, "Se ha guardado correctamente el grupo");
-        }
+        DefaultListModel<Grupo> model = (DefaultListModel<Grupo>) lstGroupList.getModel();
+        
+        if (model == null){
+            model = new DefaultListModel<>();
+            lstGroupList.setModel(model);
+        }        
+        
+        int id = SQLiteDatabase.insertarGrupo(datosUsuario[0], nombreGrupo);
+        Grupo nuevoGrupo = new Grupo(id, nombreGrupo);
+        model.addElement(nuevoGrupo); 
+
+        JOptionPane.showMessageDialog(null, "Se ha guardado correctamente el grupo");
     }//GEN-LAST:event_btnAddGroupActionPerformed
 
     private void lstGroupListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_lstGroupListMouseClicked
-        String nombre = lstGroupList.getSelectedValue();
-        if(lastSelectedValue != nombre){
-            lastSelectedValue = nombre;
-            JOptionPane.showMessageDialog(null, nombre);
+        
+        lastSelectedValue = lstGroupList.getSelectedValue();
+        String currentValue = lstGroupList.getSelectedValue().getNombre();
+        
+        if(!currentValue.isBlank()){
+            btnAddTask.setEnabled(true); 
+            btnAddTask.setVisible(true);
+            btnDeleteGroup.setVisible(true);
         }
     }//GEN-LAST:event_lstGroupListMouseClicked
 
     private void cargarGrupos(String[] datosUsuario){
-        
-        DefaultListModel<String> grupos = SQLiteDatabase.obtenerGrupos(datosUsuario);
-        
+
+        DefaultListModel<Grupo> grupos = SQLiteDatabase.obtenerGrupos(datosUsuario);
         if (!grupos.isEmpty()){
             lstGroupList.setModel(grupos);
-        } else {
-            btnAddTask.setEnabled(false);
         }
     }
     
@@ -182,13 +199,11 @@ public class Tareas extends javax.swing.JFrame {
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(() -> new Tareas(args).setVisible(true));
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddGroup;
     private javax.swing.JButton btnAddTask;
+    private javax.swing.JButton btnDeleteGroup;
     private javax.swing.JButton jButton3;
     private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
@@ -196,7 +211,7 @@ public class Tareas extends javax.swing.JFrame {
     private javax.swing.JLabel lblGroups;
     private javax.swing.JLabel lblTasks;
     private javax.swing.JLabel lblUser;
-    private javax.swing.JList<String> lstGroupList;
+    private javax.swing.JList<Grupo> lstGroupList;
     private javax.swing.JScrollPane spGroupList;
     private javax.swing.JScrollPane spToDoList;
     private javax.swing.JTable tblToDoList;

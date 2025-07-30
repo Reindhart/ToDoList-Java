@@ -88,7 +88,7 @@ public class Login extends javax.swing.JFrame {
                 btnAcceptActionPerformed(evt);
             }
         });
-        jPanel2.add(btnAccept, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 260, -1, -1));
+        jPanel2.add(btnAccept, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 240, -1, -1));
 
         txtUser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

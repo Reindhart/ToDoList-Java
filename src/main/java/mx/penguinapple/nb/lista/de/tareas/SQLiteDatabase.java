@@ -56,16 +56,12 @@ public class SQLiteDatabase {
         String sqlTareas = """
             CREATE TABLE IF NOT EXISTS tareas (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                usuario_id INTEGER NOT NULL,
                 grupo_id INTEGER NOT NULL,
                 tarea TEXT NOT NULL,
                 completado BOOLEAN DEFAULT FALSE,
                 fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
                 fecha_completado DATETIME NULL,
                 fecha_limite DATETIME NULL,
-                FOREIGN KEY (usuario_id) REFERENCES usuarios(id) 
-                    ON DELETE CASCADE 
-                    ON UPDATE CASCADE,
                 FOREIGN KEY (grupo_id) REFERENCES grupos(id)
                                     ON DELETE CASCADE 
                                     ON UPDATE CASCADE
@@ -156,9 +152,9 @@ public class SQLiteDatabase {
     }
     
     
-    public static DefaultListModel<String> obtenerGrupos(String[] datosUsuario){
+    public static DefaultListModel<Grupo> obtenerGrupos(String[] datosUsuario){
         String sql = "SELECT * FROM grupos WHERE usuario_id = ?";
-        DefaultListModel<String> model = new DefaultListModel<>();
+        DefaultListModel<Grupo> model = new DefaultListModel<>();
         
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -167,8 +163,11 @@ public class SQLiteDatabase {
   
             try (ResultSet rs = pstmt.executeQuery()){
                 while (rs.next()) {                   
+                    String idGrupo = rs.getString("id");
                     String nombreGrupo = rs.getString("nombre");
-                    model.addElement(nombreGrupo);
+                    int id = Integer.parseInt(idGrupo);                    
+                    Grupo grupo = new Grupo(id, nombreGrupo);
+                    model.addElement(grupo);
                 }
                 
                 return model;
@@ -180,7 +179,7 @@ public class SQLiteDatabase {
     }
     
     public static DefaultListModel<String> obtenerTareas(String[] datosUsuario){
-        String sql = "SELECT * FROM grupos WHERE usuario_id = ?";
+        String sql = "SELECT * FROM tareas WHERE grupo_id = ?";
         DefaultListModel<String> model = new DefaultListModel<>();
         
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
@@ -202,20 +201,27 @@ public class SQLiteDatabase {
         }
     }
     
-    public static boolean insertarGrupo(String usuario_id, String nombre){
+    public static Integer insertarGrupo(String usuario_id, String nombre){
+        
         String sql = "INSERT INTO grupos(usuario_id, nombre) VALUES(?, ?)";
+        
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
-            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             pstmt.setString(1, usuario_id);
             pstmt.setString(2, nombre);
-            pstmt.executeUpdate();
             
-            return true;
-
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        return generatedKeys.getInt(1); // Devuelve el ID generado
+                    }
+                }
+            }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
-        }        
+        }
+        return null;        
     }
 }

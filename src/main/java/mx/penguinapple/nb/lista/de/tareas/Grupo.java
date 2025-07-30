@@ -8,11 +8,11 @@ package mx.penguinapple.nb.lista.de.tareas;
  *
  * @author Reindhart
  */
-public class Grupos {
-    private int id;
-    private String nombre;
+public class Grupo {
+    private final int id;
+    private final String nombre;
 
-    public Grupos(int id, String nombre) {
+    public Grupo(int id, String nombre) {
         this.id = id;
         this.nombre = nombre;
     }
