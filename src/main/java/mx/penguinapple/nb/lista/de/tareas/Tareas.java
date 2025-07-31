@@ -12,6 +12,7 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 /**
  *
  * @author Reindhart
@@ -19,6 +20,7 @@ import javax.swing.JOptionPane;
 public class Tareas extends javax.swing.JFrame {
     
     private final String[] datosUsuario;
+    private final DefaultTableModel tableModel;
     
     private Grupo lastSelectedValue;
 
@@ -27,7 +29,26 @@ public class Tareas extends javax.swing.JFrame {
      * @param datosUsuario
      */
     public Tareas(String[] datosUsuario) {
+        
+        tableModel = new DefaultTableModel(new Object[]{"ID", "Completado", "Tarea", "Fecha Límite"}, 0) {
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 1) return Boolean.class; // Checkbox
+                return String.class;
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 1; // Solo checkbox editable
+            }
+        };
+        
         initComponents();
+        
+        // Ocultar columna ID
+        tblToDoList.getColumnModel().getColumn(0).setPreferredWidth(0);
+        
+        
         this.datosUsuario = datosUsuario;
         lblUser.setText(datosUsuario[1]);
         this.setTitle("Tareas de " + datosUsuario[1]);
@@ -38,6 +59,8 @@ public class Tareas extends javax.swing.JFrame {
         btnAddTask.setVisible(false);
         btnDeleteGroup.setEnabled(false);
         btnDeleteGroup.setVisible(false);
+        
+        
     }
 
     /**
@@ -49,9 +72,7 @@ public class Tareas extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jScrollPane3 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
-        jButton3 = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
         jPanel1 = new javax.swing.JPanel();
         btnAddTask = new javax.swing.JButton();
         lblGroups = new javax.swing.JLabel();
@@ -63,15 +84,6 @@ public class Tareas extends javax.swing.JFrame {
         lblUser = new javax.swing.JLabel();
         btnAddGroup = new javax.swing.JButton();
         btnDeleteGroup = new javax.swing.JButton();
-
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
-        jScrollPane3.setViewportView(jList1);
-
-        jButton3.setText("jButton3");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -105,24 +117,10 @@ public class Tareas extends javax.swing.JFrame {
 
         jPanel1.add(spGroupList, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 50, 120, 370));
 
-        tblToDoList.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-
-            },
-            new String [] {
-                "¿Completado?", "Nombre de tarea", "Fecha y Hora Limite"
-            }
-        ) {
-            Class[] types = new Class [] {
-                java.lang.Boolean.class, java.lang.String.class, java.lang.Object.class
-            };
-
-            public Class getColumnClass(int columnIndex) {
-                return types [columnIndex];
-            }
-        });
+        tblToDoList.setModel(this.tableModel);
         tblToDoList.setColumnSelectionAllowed(true);
         spToDoList.setViewportView(tblToDoList);
+        tblToDoList.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 
         jPanel1.add(spToDoList, new org.netbeans.lib.awtextra.AbsoluteConstraints(180, 50, 660, 370));
 
@@ -150,7 +148,7 @@ public class Tareas extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAddTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddTaskActionPerformed
-        JFrame newtask = new NewTask(lastSelectedValue);
+        JFrame newtask = new NewTask(lastSelectedValue, tableModel);
         newtask.setVisible(true);
     }//GEN-LAST:event_btnAddTaskActionPerformed
 
@@ -204,10 +202,8 @@ public class Tareas extends javax.swing.JFrame {
     private javax.swing.JButton btnAddGroup;
     private javax.swing.JButton btnAddTask;
     private javax.swing.JButton btnDeleteGroup;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lblGroups;
     private javax.swing.JLabel lblTasks;
     private javax.swing.JLabel lblUser;

@@ -9,12 +9,15 @@ import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.github.lgooddatepicker.components.TimePicker;
 import com.github.lgooddatepicker.components.TimePickerSettings;
 import com.github.lgooddatepicker.components.TimePickerSettings.TimeIncrement;
+import java.awt.Image;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -24,19 +27,22 @@ public class NewTask extends javax.swing.JFrame {
     
     private final String nameGroup;
     private final int idGroup;
-    private DatePickerSettings dateSettings = new DatePickerSettings();
     private LocalDate today = LocalDate.now();
     private final DatePicker datePicker;
     private final TimePicker timePicker;
+    private final DefaultTableModel tareas;
 
     
-    public NewTask(Grupo group) {
+    public NewTask(Grupo group, DefaultTableModel tareas) {
         this.nameGroup = group.getNombre();
         this.idGroup = group.getId();
+        this.tareas = tareas;
         
         initComponents();
         
         this.setTitle("Tarea para " + this.nameGroup);
+        Image img = new ImageIcon(getClass().getResource("/img/wia_img_check-0.png")).getImage();
+        this.setIconImage(img);
         
         datePicker = dtpDueDateTime.datePicker;
         timePicker = dtpDueDateTime.timePicker;
@@ -113,7 +119,7 @@ public class NewTask extends javax.swing.JFrame {
         String date_time = null;
 
         if (date.isBlank() && !time.isBlank()) {
-            date = LocalDate.now().toString();
+            date = today.toString();
         }
 
         // Validar si hay solo fecha
@@ -141,21 +147,17 @@ public class NewTask extends javax.swing.JFrame {
         
         if (id != null){
             JOptionPane.showMessageDialog(null, "Funco, esta es la id: " + id);
-            dispose();            
+            
+            
+            
+            dispose();
         }
     }//GEN-LAST:event_btnAcceptTaskActionPerformed
 
     /**
      * @param args the command line arguments
      */
-    public static void main(String args[]) {
-        int id = 1; String nombre = "Cositas";
-        Grupo test = new Grupo(id, nombre);
-        
-        java.awt.EventQueue.invokeLater(() -> new NewTask(test).setVisible(true));
-    }
-
-
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAcceptTask;
     private javax.swing.JButton btnCancelTask;
