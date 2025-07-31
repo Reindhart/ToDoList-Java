@@ -59,8 +59,6 @@ public class SQLiteDatabase {
                 grupo_id INTEGER NOT NULL,
                 tarea TEXT NOT NULL,
                 completado BOOLEAN DEFAULT FALSE,
-                fecha_creacion DATETIME DEFAULT CURRENT_TIMESTAMP,
-                fecha_completado DATETIME NULL,
                 fecha_limite DATETIME NULL,
                 FOREIGN KEY (grupo_id) REFERENCES grupos(id)
                                     ON DELETE CASCADE 
@@ -223,5 +221,29 @@ public class SQLiteDatabase {
             e.printStackTrace();
         }
         return null;        
+    }
+    
+    public static Integer insertarTarea(int grupo_id, String tarea, String fecha_limite){
+        
+        String sql = "INSERT INTO tareas(grupo_id, tarea, fecha_limite) VALUES(?, ?, ?)";
+        
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+            PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            pstmt.setInt(1, grupo_id);
+            pstmt.setString(2, tarea);
+            pstmt.setString(3, fecha_limite);
+            
+            int affectedRows = pstmt.executeUpdate();
+            if (affectedRows > 0) {
+                try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
+                    if (generatedKeys.next()) {
+                        return generatedKeys.getInt(1);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 }

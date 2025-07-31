@@ -4,8 +4,17 @@
  */
 package mx.penguinapple.nb.lista.de.tareas;
 
+import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
+import com.github.lgooddatepicker.components.TimePicker;
+import com.github.lgooddatepicker.components.TimePickerSettings;
+import com.github.lgooddatepicker.components.TimePickerSettings.TimeIncrement;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -17,15 +26,27 @@ public class NewTask extends javax.swing.JFrame {
     private final int idGroup;
     private DatePickerSettings dateSettings = new DatePickerSettings();
     private LocalDate today = LocalDate.now();
+    private final DatePicker datePicker;
+    private final TimePicker timePicker;
+
     
     public NewTask(Grupo group) {
         this.nameGroup = group.getNombre();
         this.idGroup = group.getId();
+        
         initComponents();
+        
         this.setTitle("Tarea para " + this.nameGroup);
+        
+        datePicker = dtpDueDateTime.datePicker;
+        timePicker = dtpDueDateTime.timePicker;
+
+        DatePickerSettings dateSettings = datePicker.getSettings();        
         dateSettings.setDateRangeLimits(today, null);
         
-          
+        TimePickerSettings timeSettings = timePicker.getSettings();
+        timeSettings.setFormatForDisplayTime("HH:mm");
+        timeSettings.generatePotentialMenuTimes(TimeIncrement.FifteenMinutes, null, null);
     }
     
     /**
@@ -47,6 +68,7 @@ public class NewTask extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Nueva Tarea");
+        getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -54,7 +76,7 @@ public class NewTask extends javax.swing.JFrame {
         jPanel1.add(lblDescription, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 20, -1, -1));
 
         lblDueDate.setText("Fecha limite");
-        jPanel1.add(lblDueDate, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 50, -1, -1));
+        jPanel1.add(lblDueDate, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 60, -1, -1));
 
         btnCancelTask.setText("Cancelar");
         btnCancelTask.addActionListener(new java.awt.event.ActionListener() {
@@ -62,7 +84,7 @@ public class NewTask extends javax.swing.JFrame {
                 btnCancelTaskActionPerformed(evt);
             }
         });
-        jPanel1.add(btnCancelTask, new org.netbeans.lib.awtextra.AbsoluteConstraints(290, 90, -1, -1));
+        jPanel1.add(btnCancelTask, new org.netbeans.lib.awtextra.AbsoluteConstraints(330, 100, -1, -1));
 
         btnAcceptTask.setText("Aceptar");
         btnAcceptTask.addActionListener(new java.awt.event.ActionListener() {
@@ -70,20 +92,11 @@ public class NewTask extends javax.swing.JFrame {
                 btnAcceptTaskActionPerformed(evt);
             }
         });
-        jPanel1.add(btnAcceptTask, new org.netbeans.lib.awtextra.AbsoluteConstraints(200, 90, -1, -1));
-        jPanel1.add(txtDescription, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 20, 260, -1));
-        jPanel1.add(dtpDueDateTime, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 50, -1, -1));
+        jPanel1.add(btnAcceptTask, new org.netbeans.lib.awtextra.AbsoluteConstraints(240, 100, -1, -1));
+        jPanel1.add(txtDescription, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 20, 300, -1));
+        jPanel1.add(dtpDueDateTime, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 60, 300, -1));
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 134, javax.swing.GroupLayout.PREFERRED_SIZE)
-        );
+        getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 420, 134));
 
         pack();
         setLocationRelativeTo(null);
@@ -94,7 +107,42 @@ public class NewTask extends javax.swing.JFrame {
     }//GEN-LAST:event_btnCancelTaskActionPerformed
 
     private void btnAcceptTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAcceptTaskActionPerformed
+        String task = txtDescription.getText();
+        String date = datePicker.getDateStringOrEmptyString();
+        String time = timePicker.getTimeStringOrEmptyString();
+        String date_time = null;
 
+        if (date.isBlank() && !time.isBlank()) {
+            date = LocalDate.now().toString();
+        }
+
+        // Validar si hay solo fecha
+        if (!date.isBlank() && time.isBlank()) {
+            time = "23:59";
+        }
+
+        if (!date.isBlank() && !time.isBlank()) {
+            try {
+                LocalDateTime dateTime = LocalDateTime.of(LocalDate.parse(date), LocalTime.parse(time));
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                date_time = dateTime.format(formatter);
+            } catch (DateTimeParseException e) {
+                JOptionPane.showMessageDialog(null, "La fecha u hora no tienen un formato válido.", "FORMATO INVÁLIDO", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+        }
+
+        if (task.isBlank()) {
+            JOptionPane.showMessageDialog(null, "Por favor ponga una descripción", "NO HAY DESCRIPCIÓN", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        Integer id = SQLiteDatabase.insertarTarea(idGroup, task, date_time);
+        
+        if (id != null){
+            JOptionPane.showMessageDialog(null, "Funco, esta es la id: " + id);
+            dispose();            
+        }
     }//GEN-LAST:event_btnAcceptTaskActionPerformed
 
     /**
@@ -117,4 +165,5 @@ public class NewTask extends javax.swing.JFrame {
     private javax.swing.JLabel lblDueDate;
     private javax.swing.JTextField txtDescription;
     // End of variables declaration//GEN-END:variables
+
 }
