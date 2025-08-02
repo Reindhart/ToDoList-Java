@@ -6,8 +6,6 @@ package mx.penguinapple.nb.lista.de.tareas;
 import mx.penguinapple.nb.lista.de.tareas.Grupo;
 
 import java.awt.Image;
-import java.sql.ResultSet;
-import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -20,41 +18,23 @@ import javax.swing.table.DefaultTableModel;
 public class Tareas extends javax.swing.JFrame {
     
     private final String[] datosUsuario;
-    private final DefaultTableModel tableModel;
-    
+    private  DefaultTableModel tableModel;
     private Grupo lastSelectedValue;
 
     /**
      * Creates new form Tareas
      * @param datosUsuario
      */
-    public Tareas(String[] datosUsuario) {
-        
-        tableModel = new DefaultTableModel(new Object[]{"ID", "Completado", "Tarea", "Fecha Límite"}, 0) {
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 1) return Boolean.class; // Checkbox
-                return String.class;
-            }
-
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return column == 1; // Solo checkbox editable
-            }
-        };
-        
+    public Tareas(String[] datosUsuario) {        
         initComponents();
-        
-        // Ocultar columna ID
-        tblToDoList.getColumnModel().getColumn(0).setPreferredWidth(0);
-        
         
         this.datosUsuario = datosUsuario;
         lblUser.setText(datosUsuario[1]);
         this.setTitle("Tareas de " + datosUsuario[1]);
         Image img = new ImageIcon(getClass().getResource("/img/wia_img_check-0.png")).getImage();
         this.setIconImage(img);
-        cargarGrupos(datosUsuario);
+        cargarGrupos(datosUsuario);        
+        
         btnAddTask.setEnabled(false);
         btnAddTask.setVisible(false);
         btnDeleteGroup.setEnabled(false);
@@ -174,6 +154,8 @@ public class Tareas extends javax.swing.JFrame {
         lastSelectedValue = lstGroupList.getSelectedValue();
         String currentValue = lstGroupList.getSelectedValue().getNombre();
         
+        
+        
         if(!currentValue.isBlank()){
             btnAddTask.setEnabled(true); 
             btnAddTask.setVisible(true);
@@ -182,15 +164,18 @@ public class Tareas extends javax.swing.JFrame {
     }//GEN-LAST:event_lstGroupListMouseClicked
 
     private void cargarGrupos(String[] datosUsuario){
-
         DefaultListModel<Grupo> grupos = SQLiteDatabase.obtenerGrupos(datosUsuario);
         if (!grupos.isEmpty()){
             lstGroupList.setModel(grupos);
         }
     }
     
-    private void cargarTareas(){
-        
+    private void cargarTareas(int id){
+        tableModel = SQLiteDatabase.obtenerTareas(id);
+        if(tableModel != null){
+            tblToDoList.setModel(tableModel);
+            tblToDoList.getColumnModel().getColumn(0).setPreferredWidth(0);
+        }
     }
     
     

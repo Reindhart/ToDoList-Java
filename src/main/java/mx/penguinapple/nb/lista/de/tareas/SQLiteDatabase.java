@@ -5,7 +5,11 @@
 package mx.penguinapple.nb.lista.de.tareas;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.table.DefaultTableModel;
 import org.mindrot.jbcrypt.BCrypt;
 
 /**
@@ -153,6 +157,7 @@ public class SQLiteDatabase {
     public static DefaultListModel<Grupo> obtenerGrupos(String[] datosUsuario){
         String sql = "SELECT * FROM grupos WHERE usuario_id = ?";
         DefaultListModel<Grupo> model = new DefaultListModel<>();
+        LinkedList<Grupo> lista = new LinkedList<>();
         
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -166,6 +171,7 @@ public class SQLiteDatabase {
                     int id = Integer.parseInt(idGrupo);                    
                     Grupo grupo = new Grupo(id, nombreGrupo);
                     model.addElement(grupo);
+                    lista.addLast(grupo);
                 }
                 
                 return model;
@@ -176,26 +182,57 @@ public class SQLiteDatabase {
         }
     }
     
-    public static DefaultListModel<String> obtenerTareas(String[] datosUsuario){
-        String sql = "SELECT * FROM tareas WHERE grupo_id = ?";
-        DefaultListModel<String> model = new DefaultListModel<>();
+    public static DefaultTableModel obtenerTareas(int idGroup){
+        List<Tarea> tareas = new ArrayList<>();
         
+        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Completado", "Tarea", "Fecha Límite"}, 0){
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 1) return Boolean.class; // Checkbox
+                return String.class;
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 1; // Solo checkbox editable
+            }
+        };
+        
+        String sql = "SELECT * FROM tareas WHERE grupo_id = ?";       
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setString(1, datosUsuario[0]);
+            pstmt.setInt(1, idGroup);
   
             try (ResultSet rs = pstmt.executeQuery()){
                 while (rs.next()) {                   
-                    String nombreGrupo = rs.getString("nombre");
-                    model.addElement(nombreGrupo);
+                    int id = rs.getInt("id");
+                    String descripcion = rs.getString("tarea");
+                    boolean completado = rs.getBoolean("completado");
+                    String fecha_limite = rs.getString("fecha_limite");
+                    
+                    Tarea tarea = new Tarea();
+                    tarea.setTarea(id, descripcion, completado, fecha_limite);
+                    tareas.addLast(tarea);                    
                 }
-                
-                return model;
             }
+            
+            for(Tarea t : tareas){
+                Object[] fila = new Object[] {
+                    t.getId(),
+                    t.isCompletado(),
+                    t.getDescripcion(),
+                    t.getFecha_limite()
+                };
+
+                model.addRow(fila);
+            }            
+
+            return model;
+            
         } catch (SQLException e) {
             e.printStackTrace();
-            return new DefaultListModel<>();
+            return null;
         }
     }
     
