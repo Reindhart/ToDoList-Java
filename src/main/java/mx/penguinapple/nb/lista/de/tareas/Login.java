@@ -153,19 +153,19 @@ public class Login extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnAcceptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAcceptActionPerformed
-        JTextField user = txtUser;
-        JPasswordField pwd = pwdPassword;
+        JTextField username = txtUser;
+        JPasswordField password = pwdPassword;
         JLabel errorMsg = lblErrorMsg;
         
-        if(user.getText().isBlank() || pwd.getPassword().length == 0){
+        if(username.getText().isBlank() || password.getPassword().length == 0){
             errorMsg.setText("Porfavor rellene ambos campos");
             errorMsg.setVisible(true);
             slp(lblErrorMsg);
         }
         
-        String[] usuario = SQLiteDatabase.rsUsuario(user.getText(), pwd.getPassword());
-        if (usuario != null){
-            Tareas tareas = new Tareas(usuario);
+        String[] user = SQLiteDatabase.searchUser(username.getText(), password.getPassword());
+        if (user != null){
+            Tareas tareas = new Tareas(user);
             tareas.setVisible(true);
             dispose();
         } else {

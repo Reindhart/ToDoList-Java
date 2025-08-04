@@ -17,23 +17,39 @@ import javax.swing.table.DefaultTableModel;
  */
 public class Tareas extends javax.swing.JFrame {
     
-    private final String[] datosUsuario;
+    private final String[] userData;
     private  DefaultTableModel tableModel;
     private Grupo lastSelectedValue;
 
     /**
      * Creates new form Tareas
-     * @param datosUsuario
+     * @param userData
      */
-    public Tareas(String[] datosUsuario) {        
+    public Tareas(String[] userData) {        
+        
+        tableModel = new DefaultTableModel(new Object[]{"ID", "Completado", "Tarea", "Fecha Límite"}, 0){
+            @Override
+            public Class<?> getColumnClass(int columnIndex) {
+                if (columnIndex == 1) return Boolean.class; // Checkbox
+                return String.class;
+            }
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return column == 1; // Solo checkbox editable
+            }
+        };
+        
         initComponents();
         
-        this.datosUsuario = datosUsuario;
-        lblUser.setText(datosUsuario[1]);
-        this.setTitle("Tareas de " + datosUsuario[1]);
+        this.userData = userData;
+        lblUser.setText(userData[1]);
+        
+        this.setTitle("Tareas de " + userData[1]);
         Image img = new ImageIcon(getClass().getResource("/img/wia_img_check-0.png")).getImage();
         this.setIconImage(img);
-        cargarGrupos(datosUsuario);        
+        
+        loadGroups(userData);        
         
         btnAddTask.setEnabled(false);
         btnAddTask.setVisible(false);
@@ -133,7 +149,7 @@ public class Tareas extends javax.swing.JFrame {
     }//GEN-LAST:event_btnAddTaskActionPerformed
 
     private void btnAddGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddGroupActionPerformed
-        String nombreGrupo = JOptionPane.showInputDialog("Escriba el nombre del grupo");
+        String groupName = JOptionPane.showInputDialog("Escriba el nombre del grupo");
         
         DefaultListModel<Grupo> model = (DefaultListModel<Grupo>) lstGroupList.getModel();
         
@@ -142,8 +158,8 @@ public class Tareas extends javax.swing.JFrame {
             lstGroupList.setModel(model);
         }        
         
-        int id = SQLiteDatabase.insertarGrupo(datosUsuario[0], nombreGrupo);
-        Grupo nuevoGrupo = new Grupo(id, nombreGrupo);
+        int id = SQLiteDatabase.addGroup(userData[0], groupName);
+        Grupo nuevoGrupo = new Grupo(id, groupName);
         model.addElement(nuevoGrupo); 
 
         JOptionPane.showMessageDialog(null, "Se ha guardado correctamente el grupo");
@@ -153,25 +169,23 @@ public class Tareas extends javax.swing.JFrame {
         
         lastSelectedValue = lstGroupList.getSelectedValue();
         String currentValue = lstGroupList.getSelectedValue().getNombre();
-        
-        
-        
         if(!currentValue.isBlank()){
             btnAddTask.setEnabled(true); 
             btnAddTask.setVisible(true);
             btnDeleteGroup.setVisible(true);
+            loadTasks(lastSelectedValue.getId());
         }
     }//GEN-LAST:event_lstGroupListMouseClicked
 
-    private void cargarGrupos(String[] datosUsuario){
-        DefaultListModel<Grupo> grupos = SQLiteDatabase.obtenerGrupos(datosUsuario);
+    private void loadGroups(String[] userData){
+        DefaultListModel<Grupo> grupos = SQLiteDatabase.getGroups(userData);
         if (!grupos.isEmpty()){
             lstGroupList.setModel(grupos);
         }
     }
     
-    private void cargarTareas(int id){
-        tableModel = SQLiteDatabase.obtenerTareas(id);
+    private void loadTasks(int id){
+        tableModel = SQLiteDatabase.getTasks(id);
         if(tableModel != null){
             tblToDoList.setModel(tableModel);
             tblToDoList.getColumnModel().getColumn(0).setPreferredWidth(0);

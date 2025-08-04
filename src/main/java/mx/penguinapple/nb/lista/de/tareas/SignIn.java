@@ -4,10 +4,7 @@
  */
 package mx.penguinapple.nb.lista.de.tareas;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-import static mx.penguinapple.nb.lista.de.tareas.SQLiteDatabase.insertarUsuario;
+import static mx.penguinapple.nb.lista.de.tareas.SQLiteDatabase.insertUser;
 import static mx.penguinapple.nb.lista.de.tareas.Login.slp;
 /**
  *
@@ -117,7 +114,7 @@ public class SignIn extends javax.swing.JFrame {
         pwdPasswordSingIn.setText("");
         btnAcceptSingIn.setEnabled(false);
 
-        if(!insertarUsuario(username, password)){
+        if(!insertUser(username, password)){
             errorMsg.setText("El usuario ya existe");
             errorMsg.setVisible(true);
             slp(errorMsg);

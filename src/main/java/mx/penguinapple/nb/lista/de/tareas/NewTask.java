@@ -143,13 +143,11 @@ public class NewTask extends javax.swing.JFrame {
             return;
         }
 
-        Integer id = SQLiteDatabase.insertarTarea(idGroup, task, date_time);
+        Integer id = SQLiteDatabase.addTask(idGroup, task, date_time);
         
         if (id != null){
-            JOptionPane.showMessageDialog(null, "Funco, esta es la id: " + id);
-            
-            
-            
+            Object[] tarea = new Object[] {idGroup, false, task, date_time};
+            tareas.addRow(tarea);
             dispose();
         }
     }//GEN-LAST:event_btnAcceptTaskActionPerformed

@@ -22,11 +22,11 @@ public class SQLiteDatabase {
     private static final String DATABASE_URL = "jdbc:sqlite:todolist.db";
     
     public static void main(String[] args) {
-        crearBaseDatos();
-        crearTablas();
+        createDB();
+        createTables();
     }
     
-    public static void crearBaseDatos() {
+    public static void createDB() {
         try (Connection conn = DriverManager.getConnection(DATABASE_URL)) {
             if (conn != null) {
                 System.out.println("Ruta DB: " + System.getProperty("user.dir") + "/todolist.db");
@@ -36,9 +36,9 @@ public class SQLiteDatabase {
         }
     }
     
-    public static void crearTablas() {
+    public static void createTables() {
         // SQL para crear una tabla de ejemplo
-        String sqlUsuarios = """
+        String sqlUsers = """
             CREATE TABLE IF NOT EXISTS usuarios (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 usuario VARCHAR(50) NOT NULL UNIQUE,
@@ -46,7 +46,7 @@ public class SQLiteDatabase {
             );
             """;
         
-        String sqlGrupos = """
+        String sqlGroups = """
             CREATE TABLE IF NOT EXISTS grupos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 usuario_id INTEGER NOT NULL,
@@ -57,7 +57,7 @@ public class SQLiteDatabase {
             );
             """;
         
-        String sqlTareas = """
+        String sqlTasks = """
             CREATE TABLE IF NOT EXISTS tareas (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 grupo_id INTEGER NOT NULL,
@@ -76,57 +76,17 @@ public class SQLiteDatabase {
             stmt.execute("PRAGMA foreign_keys = ON");
             
             // Crear tablas
-            stmt.execute(sqlUsuarios);
-            stmt.execute(sqlGrupos);
-            stmt.execute(sqlTareas);
+            stmt.execute(sqlUsers);
+            stmt.execute(sqlGroups);
+            stmt.execute(sqlTasks);
             
         } catch (SQLException e) {
             System.err.println("Error al crear las tablas: " + e.getMessage());
         }
     }
     
-    public static boolean buscarUsuario(String usuario){
+    public static String[] searchUser(String usuario, char[] contrasena){
         
-        String sql = "SELECT 1 FROM usuarios WHERE usuario = ? LIMIT 1";
-                
-        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
-            Statement stmt = conn.createStatement()) {
-            if (stmt.execute(sql)){
-                return true;
-            }
-        } catch (SQLException e) {
-            return false;
-        }        
-        return false;
-    }
-    
-    public static boolean insertarUsuario(String usuario, char[] contrasena){
-        String sql = "INSERT INTO usuarios(usuario, contrasena) VALUES(?, ?)";
-        String passwordString = null;
-        
-        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
-            PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            
-            passwordString = new String(contrasena);
-            String hashedPassword = BCrypt.hashpw(passwordString, BCrypt.gensalt());
-
-            pstmt.setString(1, usuario);
-            pstmt.setString(2, hashedPassword);
-            
-            return pstmt.executeUpdate() > 0;
-
-        } catch (SQLException e) {
-            if (e.getMessage().contains("UNIQUE constraint failed")) {
-                System.out.println("El nombre de usuario ya existe");
-                return false;
-            } 
-        } finally {
-            if (passwordString != null) passwordString = null;
-        }
-        return true;
-    }
-    
-    public static String[] rsUsuario(String usuario, char[] contrasena) {
         String sql = "SELECT * FROM usuarios WHERE usuario = ?";
 
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
@@ -153,25 +113,50 @@ public class SQLiteDatabase {
         return null;
     }
     
+    public static boolean insertUser(String usuario, char[] contrasena){
+        String sql = "INSERT INTO usuarios(usuario, contrasena) VALUES(?, ?)";
+        String passwordString = null;
+        
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            passwordString = new String(contrasena);
+            String hashedPassword = BCrypt.hashpw(passwordString, BCrypt.gensalt());
+
+            pstmt.setString(1, usuario);
+            pstmt.setString(2, hashedPassword);
+            
+            return pstmt.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            if (e.getMessage().contains("UNIQUE constraint failed")) {
+                System.out.println("El nombre de usuario ya existe");
+                return false;
+            } 
+        } finally {
+            if (passwordString != null) passwordString = null;
+        }
+        return true;
+    }
     
-    public static DefaultListModel<Grupo> obtenerGrupos(String[] datosUsuario){
+    public static DefaultListModel<Grupo> getGroups(String[] userData){
         String sql = "SELECT * FROM grupos WHERE usuario_id = ?";
         DefaultListModel<Grupo> model = new DefaultListModel<>();
-        LinkedList<Grupo> lista = new LinkedList<>();
+        LinkedList<Grupo> groupList = new LinkedList<>();
         
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            pstmt.setString(1, datosUsuario[0]);
+            pstmt.setString(1, userData[0]);
   
             try (ResultSet rs = pstmt.executeQuery()){
                 while (rs.next()) {                   
                     String idGrupo = rs.getString("id");
                     String nombreGrupo = rs.getString("nombre");
                     int id = Integer.parseInt(idGrupo);                    
-                    Grupo grupo = new Grupo(id, nombreGrupo);
-                    model.addElement(grupo);
-                    lista.addLast(grupo);
+                    Grupo group = new Grupo(id, nombreGrupo);
+                    model.addElement(group);
+                    groupList.addLast(group);
                 }
                 
                 return model;
@@ -182,7 +167,7 @@ public class SQLiteDatabase {
         }
     }
     
-    public static DefaultTableModel obtenerTareas(int idGroup){
+    public static DefaultTableModel getTasks(int idGroup){
         List<Tarea> tareas = new ArrayList<>();
         
         DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Completado", "Tarea", "Fecha Límite"}, 0){
@@ -236,7 +221,7 @@ public class SQLiteDatabase {
         }
     }
     
-    public static Integer insertarGrupo(String usuario_id, String nombre){
+    public static Integer addGroup(String usuario_id, String nombre){
         
         String sql = "INSERT INTO grupos(usuario_id, nombre) VALUES(?, ?)";
         
@@ -260,7 +245,7 @@ public class SQLiteDatabase {
         return null;        
     }
     
-    public static Integer insertarTarea(int grupo_id, String tarea, String fecha_limite){
+    public static Integer addTask(int grupo_id, String tarea, String fecha_limite){
         
         String sql = "INSERT INTO tareas(grupo_id, tarea, fecha_limite) VALUES(?, ?, ?)";
         
