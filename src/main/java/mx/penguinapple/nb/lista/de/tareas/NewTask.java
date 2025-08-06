@@ -150,7 +150,7 @@ public class NewTask extends javax.swing.JFrame {
         Integer id = SQLiteDatabase.addTask(idGroup, task, date_time);
         
         if (id != null){
-            Object[] tarea = new Object[] {idGroup, false, task, date_time};
+            Object[] tarea = new Object[] {id, false, task, date_time};
             tareas.addRow(tarea);
             dispose();
         }

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultListModel;
-import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -214,7 +213,7 @@ public class SQLiteDatabase {
 
                 model.addRow(fila);
             }            
-
+            
             return model;
             
         } catch (SQLException e) {

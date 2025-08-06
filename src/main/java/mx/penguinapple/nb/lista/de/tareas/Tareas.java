@@ -3,6 +3,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package mx.penguinapple.nb.lista.de.tareas;
+import java.awt.Component;
 import mx.penguinapple.nb.lista.de.tareas.Grupo;
 
 import java.awt.Image;
@@ -12,7 +13,12 @@ import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 /**
  *
  * @author Reindhart
@@ -29,18 +35,7 @@ public class Tareas extends javax.swing.JFrame {
      */
     public Tareas(String[] userData) {        
         
-        tableModel = new DefaultTableModel(new Object[]{"ID", "Completado", "Tarea", "Fecha Límite"}, 0){
-            @Override
-            public Class<?> getColumnClass(int columnIndex) {
-                if (columnIndex == 1) return Boolean.class; // Checkbox
-                return String.class;
-            }
-
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return column == 1; // Solo checkbox editable
-            }
-        };
+        tableModel = new DefaultTableModel(new Object[]{""}, 0);
         
         initComponents();
         
@@ -116,6 +111,12 @@ public class Tareas extends javax.swing.JFrame {
         spGroupList.setViewportView(lstGroupList);
 
         jPanel1.add(spGroupList, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 50, 120, 370));
+
+        spToDoList.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                spToDoListPropertyChange(evt);
+            }
+        });
 
         tblToDoList.setModel(this.tableModel);
         tblToDoList.setColumnSelectionAllowed(true);
@@ -196,20 +197,27 @@ public class Tareas extends javax.swing.JFrame {
     }//GEN-LAST:event_lstGroupListMouseClicked
 
     private void btnDeleteGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteGroupActionPerformed
+        
+        DefaultListModel model = (DefaultListModel) lstGroupList.getModel();
+        
         int delete = JOptionPane.showConfirmDialog(null, "¿Esta seguro de eliminar: " + lastSelectedValue + "?", "Eliminar Grupo", JOptionPane.YES_NO_OPTION);
         if (delete == JOptionPane.OK_OPTION){
             if (SQLiteDatabase.deleteGroup(lastSelectedValue.getId())){
-                JOptionPane.showMessageDialog(null, "Se ha borrado el grupo");
-                loadGroups(userData);
+                
+                JOptionPane.showMessageDialog(null, "Se ha borrado el grupo");                
+                
+                int item = lstGroupList.getSelectedIndex();
+                model.remove(item);
+                
                 tableModel.setRowCount(0);
             }
         }
     }//GEN-LAST:event_btnDeleteGroupActionPerformed
 
     private void btnDeleteCompletedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteCompletedActionPerformed
-        int rowCount = tableModel.getRowCount();
-        int idCol = 0; 
-        int completedCol = 1;
+        final int rowCount = tableModel.getRowCount();
+        final int idCol = 0; 
+        final int completedCol = 1;
         List<Integer> completedTasks = new ArrayList<>();
         List<Integer> rows = new ArrayList<>();
         
@@ -235,6 +243,50 @@ public class Tareas extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_btnDeleteCompletedActionPerformed
 
+    private void spToDoListPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_spToDoListPropertyChange
+        // TODO add your handling code here:
+    }//GEN-LAST:event_spToDoListPropertyChange
+
+    private void resizeColsWidth(JTable table){
+        
+        final int idColIndex = 0, completedColIndex = 1, dueDateColIndex = 3;
+        TableColumnModel colModel = table.getColumnModel();
+        
+        // Id Column
+        TableColumn idColModel = colModel.getColumn(idColIndex);
+        idColModel.setMinWidth(0);
+        idColModel.setMaxWidth(0);
+        idColModel.setPreferredWidth(0);                       
+        
+        //Completed Column
+        TableColumn completedCol = colModel.getColumn(completedColIndex);
+        TableCellRenderer completedRenderer = completedCol.getHeaderRenderer();
+        if (completedRenderer == null) {
+            completedRenderer = table.getTableHeader().getDefaultRenderer();
+        }
+        Component completedComponent = completedRenderer.getTableCellRendererComponent(table, completedCol.getHeaderValue(), false, false, -1, completedColIndex);
+        int completedWidth = completedComponent.getPreferredSize().width + 10;
+        completedCol.setMinWidth(completedWidth);
+        completedCol.setMaxWidth(completedWidth);
+        completedCol.setPreferredWidth(completedWidth);
+        
+        // Description Column
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS);
+        
+        // Due Date Column
+        TableColumn dueDateCol = colModel.getColumn(dueDateColIndex);
+        int maxDueDateWidth = 0;
+        
+        for(int row = 0; row < table.getRowCount(); row++){
+            TableCellRenderer dueDateRenderer = table.getCellRenderer(row, dueDateColIndex);
+            Component dueDateComponent = table.prepareRenderer(dueDateRenderer, row, dueDateColIndex);
+            maxDueDateWidth = Math.max(dueDateComponent.getPreferredSize().width, maxDueDateWidth);
+        }        
+        maxDueDateWidth += 10;
+        dueDateCol.setMaxWidth(maxDueDateWidth);
+        dueDateCol.setPreferredWidth(maxDueDateWidth);
+    }
+    
     private void loadGroups(String[] userData){
         DefaultListModel<Grupo> grupos = SQLiteDatabase.getGroups(userData);
         if (!grupos.isEmpty()){
@@ -244,8 +296,11 @@ public class Tareas extends javax.swing.JFrame {
     
     private void loadTasks(int id){
         tableModel = SQLiteDatabase.getTasks(id);
+        
         if(tableModel != null){
             tblToDoList.setModel(tableModel);
+            resizeColsWidth(tblToDoList);
+            tblToDoList.setRowHeight(25);
         }
     }
     
