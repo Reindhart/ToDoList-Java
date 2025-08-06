@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.DefaultListModel;
+import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import org.mindrot.jbcrypt.BCrypt;
 
@@ -61,7 +62,7 @@ public class SQLiteDatabase {
             CREATE TABLE IF NOT EXISTS tareas (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 grupo_id INTEGER NOT NULL,
-                tarea TEXT NOT NULL,
+                descripcion TEXT NOT NULL,
                 completado BOOLEAN DEFAULT FALSE,
                 fecha_limite DATETIME NULL,
                 FOREIGN KEY (grupo_id) REFERENCES grupos(id)
@@ -85,25 +86,25 @@ public class SQLiteDatabase {
         }
     }
     
-    public static String[] searchUser(String usuario, char[] contrasena){
+    public static String[] searchUser(String user, char[] password){
         
         String sql = "SELECT * FROM usuarios WHERE usuario = ?";
 
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            pstmt.setString(1, usuario);
+            pstmt.setString(1, user);
 
             try (ResultSet rs = pstmt.executeQuery()) {
                 if (rs.next()) {
                     String storedHash = rs.getString("contrasena");
 
-                    if (BCrypt.checkpw(new String(contrasena), storedHash)) {
-                        String[] datosUsuario = {
+                    if (BCrypt.checkpw(new String(password), storedHash)) {
+                        String[] userData = {
                             rs.getString("id"),
                             rs.getString("usuario")
                         };
-                        return datosUsuario;
+                        return userData;
                     }
                 }
             }
@@ -113,17 +114,17 @@ public class SQLiteDatabase {
         return null;
     }
     
-    public static boolean insertUser(String usuario, char[] contrasena){
+    public static boolean insertUser(String user, char[] password){
         String sql = "INSERT INTO usuarios(usuario, contrasena) VALUES(?, ?)";
         String passwordString = null;
         
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
             PreparedStatement pstmt = conn.prepareStatement(sql)) {
             
-            passwordString = new String(contrasena);
+            passwordString = new String(password);
             String hashedPassword = BCrypt.hashpw(passwordString, BCrypt.gensalt());
 
-            pstmt.setString(1, usuario);
+            pstmt.setString(1, user);
             pstmt.setString(2, hashedPassword);
             
             return pstmt.executeUpdate() > 0;
@@ -151,10 +152,10 @@ public class SQLiteDatabase {
   
             try (ResultSet rs = pstmt.executeQuery()){
                 while (rs.next()) {                   
-                    String idGrupo = rs.getString("id");
-                    String nombreGrupo = rs.getString("nombre");
-                    int id = Integer.parseInt(idGrupo);                    
-                    Grupo group = new Grupo(id, nombreGrupo);
+                    String idGroup = rs.getString("id");
+                    String nameGroup = rs.getString("nombre");
+                    int id = Integer.parseInt(idGroup);                    
+                    Grupo group = new Grupo(id, nameGroup);
                     model.addElement(group);
                     groupList.addLast(group);
                 }
@@ -170,7 +171,7 @@ public class SQLiteDatabase {
     public static DefaultTableModel getTasks(int idGroup){
         List<Tarea> tareas = new ArrayList<>();
         
-        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Completado", "Tarea", "Fecha Límite"}, 0){
+        DefaultTableModel model = new DefaultTableModel(new Object[]{"ID", "Completado", "Descripción", "Fecha Límite"}, 0){
             @Override
             public Class<?> getColumnClass(int columnIndex) {
                 if (columnIndex == 1) return Boolean.class; // Checkbox
@@ -192,13 +193,14 @@ public class SQLiteDatabase {
             try (ResultSet rs = pstmt.executeQuery()){
                 while (rs.next()) {                   
                     int id = rs.getInt("id");
-                    String descripcion = rs.getString("tarea");
+                    String descripcion = rs.getString("descripcion");
                     boolean completado = rs.getBoolean("completado");
-                    String fecha_limite = rs.getString("fecha_limite");
+                    String fecha_limite = rs.getString("fecha_limite") == null ? "---" : rs.getString("fecha_limite");
                     
                     Tarea tarea = new Tarea();
+                    
                     tarea.setTarea(id, descripcion, completado, fecha_limite);
-                    tareas.addLast(tarea);                    
+                    tareas.addLast(tarea);
                 }
             }
             
@@ -221,15 +223,15 @@ public class SQLiteDatabase {
         }
     }
     
-    public static Integer addGroup(String usuario_id, String nombre){
+    public static Integer addGroup(String idUser, String name){
         
         String sql = "INSERT INTO grupos(usuario_id, nombre) VALUES(?, ?)";
         
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            pstmt.setString(1, usuario_id);
-            pstmt.setString(2, nombre);
+            pstmt.setString(1, idUser);
+            pstmt.setString(2, name);
             
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows > 0) {
@@ -245,15 +247,15 @@ public class SQLiteDatabase {
         return null;        
     }
     
-    public static Integer addTask(int grupo_id, String tarea, String fecha_limite){
+    public static Integer addTask(int idGroup, String task, String dueDate){
         
-        String sql = "INSERT INTO tareas(grupo_id, tarea, fecha_limite) VALUES(?, ?, ?)";
+        String sql = "INSERT INTO tareas(grupo_id, descripcion, fecha_limite) VALUES(?, ?, ?)";
         
         try (Connection conn = DriverManager.getConnection(DATABASE_URL);
             PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstmt.setInt(1, grupo_id);
-            pstmt.setString(2, tarea);
-            pstmt.setString(3, fecha_limite);
+            pstmt.setInt(1, idGroup);
+            pstmt.setString(2, task);
+            pstmt.setString(3, dueDate);
             
             int affectedRows = pstmt.executeUpdate();
             if (affectedRows > 0) {
@@ -267,5 +269,42 @@ public class SQLiteDatabase {
             e.printStackTrace();
         }
         return null;
+    }
+    
+    public static boolean deleteGroup(int idGroup){
+        String sql = "DELETE FROM grupos WHERE id = ?";
+        
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+            Statement stmt = conn.createStatement();
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            pstmt.setInt(1, idGroup);
+            
+            stmt.execute("PRAGMA foreign_keys = ON"); 
+            pstmt.executeUpdate();
+            return true;
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public static boolean deletTasks(List<Integer> completedTasks){
+        String sql = "DELETE FROM tareas WHERE id = ?";
+        
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            for (int id : completedTasks){
+                pstmt.setInt(1, id);
+                pstmt.executeUpdate();
+            }            
+            
+            return true;
+
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

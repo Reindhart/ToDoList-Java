@@ -6,6 +6,8 @@ package mx.penguinapple.nb.lista.de.tareas;
 import mx.penguinapple.nb.lista.de.tareas.Grupo;
 
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
@@ -49,6 +51,7 @@ public class Tareas extends javax.swing.JFrame {
         Image img = new ImageIcon(getClass().getResource("/img/wia_img_check-0.png")).getImage();
         this.setIconImage(img);
         
+        tblToDoList.getColumnModel().getColumn(0).setPreferredWidth(0);
         loadGroups(userData);        
         
         btnAddTask.setEnabled(false);
@@ -80,6 +83,7 @@ public class Tareas extends javax.swing.JFrame {
         lblUser = new javax.swing.JLabel();
         btnAddGroup = new javax.swing.JButton();
         btnDeleteGroup = new javax.swing.JButton();
+        btnDeleteCompleted = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -93,7 +97,7 @@ public class Tareas extends javax.swing.JFrame {
                 btnAddTaskActionPerformed(evt);
             }
         });
-        jPanel1.add(btnAddTask, new org.netbeans.lib.awtextra.AbsoluteConstraints(740, 440, -1, -1));
+        jPanel1.add(btnAddTask, new org.netbeans.lib.awtextra.AbsoluteConstraints(580, 440, -1, -1));
 
         lblGroups.setFont(new java.awt.Font("Segoe UI", 1, 14)); // NOI18N
         lblGroups.setText("Grupos");
@@ -135,7 +139,20 @@ public class Tareas extends javax.swing.JFrame {
         jPanel1.add(btnAddGroup, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 440, -1, -1));
 
         btnDeleteGroup.setText("Borrar Grupo");
+        btnDeleteGroup.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteGroupActionPerformed(evt);
+            }
+        });
         jPanel1.add(btnDeleteGroup, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 440, -1, -1));
+
+        btnDeleteCompleted.setText("Eliminar Completados");
+        btnDeleteCompleted.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteCompletedActionPerformed(evt);
+            }
+        });
+        jPanel1.add(btnDeleteCompleted, new org.netbeans.lib.awtextra.AbsoluteConstraints(690, 440, -1, -1));
 
         getContentPane().add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 860, 490));
 
@@ -172,10 +189,51 @@ public class Tareas extends javax.swing.JFrame {
         if(!currentValue.isBlank()){
             btnAddTask.setEnabled(true); 
             btnAddTask.setVisible(true);
+            btnDeleteGroup.setEnabled(true);            
             btnDeleteGroup.setVisible(true);
             loadTasks(lastSelectedValue.getId());
         }
     }//GEN-LAST:event_lstGroupListMouseClicked
+
+    private void btnDeleteGroupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteGroupActionPerformed
+        int delete = JOptionPane.showConfirmDialog(null, "¿Esta seguro de eliminar: " + lastSelectedValue + "?", "Eliminar Grupo", JOptionPane.YES_NO_OPTION);
+        if (delete == JOptionPane.OK_OPTION){
+            if (SQLiteDatabase.deleteGroup(lastSelectedValue.getId())){
+                JOptionPane.showMessageDialog(null, "Se ha borrado el grupo");
+                loadGroups(userData);
+                tableModel.setRowCount(0);
+            }
+        }
+    }//GEN-LAST:event_btnDeleteGroupActionPerformed
+
+    private void btnDeleteCompletedActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteCompletedActionPerformed
+        int rowCount = tableModel.getRowCount();
+        int idCol = 0; 
+        int completedCol = 1;
+        List<Integer> completedTasks = new ArrayList<>();
+        List<Integer> rows = new ArrayList<>();
+        
+        for (int row = 0; row < rowCount; row++){
+            Object idValue = tableModel.getValueAt(row, idCol);
+            Object completedTask = tableModel.getValueAt(row, completedCol);
+            
+            if(completedTask.equals(true)){
+                rows.add(row);
+                completedTasks.add((Integer) idValue);
+            }
+        }
+        if (completedTasks.isEmpty()){
+            JOptionPane.showConfirmDialog(rootPane, "No hay tareas por eliminar");
+            return;
+        }
+        
+        if (SQLiteDatabase.deletTasks(completedTasks)){
+            for (int row : rows){
+                tableModel.removeRow(row);
+            }
+            JOptionPane.showMessageDialog(null, "Se han eliminado las tareas completadas");
+        }
+    }//GEN-LAST:event_btnDeleteCompletedActionPerformed
 
     private void loadGroups(String[] userData){
         DefaultListModel<Grupo> grupos = SQLiteDatabase.getGroups(userData);
@@ -188,7 +246,6 @@ public class Tareas extends javax.swing.JFrame {
         tableModel = SQLiteDatabase.getTasks(id);
         if(tableModel != null){
             tblToDoList.setModel(tableModel);
-            tblToDoList.getColumnModel().getColumn(0).setPreferredWidth(0);
         }
     }
     
@@ -200,6 +257,7 @@ public class Tareas extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAddGroup;
     private javax.swing.JButton btnAddTask;
+    private javax.swing.JButton btnDeleteCompleted;
     private javax.swing.JButton btnDeleteGroup;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSeparator jSeparator1;

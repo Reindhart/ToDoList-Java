@@ -116,7 +116,7 @@ public class NewTask extends javax.swing.JFrame {
         String task = txtDescription.getText();
         String date = datePicker.getDateStringOrEmptyString();
         String time = timePicker.getTimeStringOrEmptyString();
-        String date_time = null;
+        String date_time = "";
 
         if (date.isBlank() && !time.isBlank()) {
             date = today.toString();
@@ -136,6 +136,10 @@ public class NewTask extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(null, "La fecha u hora no tienen un formato válido.", "FORMATO INVÁLIDO", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+        }
+        
+        if (date.isBlank() && time.isBlank()){
+            date_time = "---";
         }
 
         if (task.isBlank()) {

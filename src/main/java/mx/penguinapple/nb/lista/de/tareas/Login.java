@@ -76,10 +76,10 @@ public class Login extends javax.swing.JFrame {
         jPanel2.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         lblUser.setText("Usuario");
-        jPanel2.add(lblUser, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 140, -1, -1));
+        jPanel2.add(lblUser, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 130, -1, -1));
 
         lblPwd.setText("Contraseña");
-        jPanel2.add(lblPwd, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 190, -1, -1));
+        jPanel2.add(lblPwd, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 180, -1, -1));
 
         btnAccept.setText("Aceptar");
         btnAccept.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -88,25 +88,25 @@ public class Login extends javax.swing.JFrame {
                 btnAcceptActionPerformed(evt);
             }
         });
-        jPanel2.add(btnAccept, new org.netbeans.lib.awtextra.AbsoluteConstraints(130, 240, -1, -1));
+        jPanel2.add(btnAccept, new org.netbeans.lib.awtextra.AbsoluteConstraints(220, 230, -1, -1));
 
         txtUser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 txtUserActionPerformed(evt);
             }
         });
-        jPanel2.add(txtUser, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 140, 190, -1));
-        jPanel2.add(pwdPassword, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 190, 190, -1));
+        jPanel2.add(txtUser, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 130, 190, -1));
+        jPanel2.add(pwdPassword, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 180, 190, -1));
 
         lblLogin.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
         lblLogin.setText("INICIA SESIÓN");
-        jPanel2.add(lblLogin, new org.netbeans.lib.awtextra.AbsoluteConstraints(80, 50, -1, -1));
+        jPanel2.add(lblLogin, new org.netbeans.lib.awtextra.AbsoluteConstraints(170, 40, -1, -1));
 
         lblErrorMsg.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         lblErrorMsg.setForeground(new java.awt.Color(204, 0, 0));
         lblErrorMsg.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblErrorMsg.setText("mensaje");
-        jPanel2.add(lblErrorMsg, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 100, 310, -1));
+        jPanel2.add(lblErrorMsg, new org.netbeans.lib.awtextra.AbsoluteConstraints(90, 90, 310, -1));
 
         lblSingIn.setForeground(new java.awt.Color(51, 0, 255));
         lblSingIn.setText("Registrate aquí");
@@ -122,9 +122,9 @@ public class Login extends javax.swing.JFrame {
                 lblSingInMouseExited(evt);
             }
         });
-        jPanel2.add(lblSingIn, new org.netbeans.lib.awtextra.AbsoluteConstraints(20, 300, -1, -1));
+        jPanel2.add(lblSingIn, new org.netbeans.lib.awtextra.AbsoluteConstraints(110, 290, -1, -1));
 
-        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(100, 90, 310, 330));
+        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 50, 450, 350));
 
         btnExit.setBackground(new java.awt.Color(204, 204, 204));
         btnExit.setIcon(new javax.swing.ImageIcon(getClass().getResource("/img/msg_error-0.png")));
@@ -135,17 +135,17 @@ public class Login extends javax.swing.JFrame {
                 btnExitActionPerformed(evt);
             }
         });
-        jPanel1.add(btnExit, new org.netbeans.lib.awtextra.AbsoluteConstraints(440, 10, -1, -1));
+        jPanel1.add(btnExit, new org.netbeans.lib.awtextra.AbsoluteConstraints(430, 10, -1, -1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 410, Short.MAX_VALUE)
         );
 
         pack();
