@@ -306,4 +306,18 @@ public class SQLiteDatabase {
         }
         return false;
     }
+    
+    public static void completTask(int id, boolean completed){
+        String sql = completed == true ? "UPDATE tareas SET completado = 1 WHERE id = ?" : "UPDATE tareas SET completado = 0 WHERE id = ?";
+        
+        try (Connection conn = DriverManager.getConnection(DATABASE_URL);
+            PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                        
+            pstmt.setInt(1, id);
+            pstmt.executeUpdate();   
+
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
 }

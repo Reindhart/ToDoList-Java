@@ -14,8 +14,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
-import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
@@ -301,6 +302,23 @@ public class Tareas extends javax.swing.JFrame {
             tblToDoList.setModel(tableModel);
             resizeColsWidth(tblToDoList);
             tblToDoList.setRowHeight(25);
+            
+            tblToDoList.getModel().addTableModelListener(new TableModelListener() {
+                @Override
+                public void tableChanged(TableModelEvent e) {
+                    int type = e.getType();
+                    int column = e.getColumn();
+                    int row = e.getFirstRow();
+                    int idCol = 0, completedCol = 1;
+
+                    if (type == TableModelEvent.UPDATE && column == completedCol) {
+                        Boolean newValue = (Boolean) tableModel.getValueAt(row, column);
+
+                        int id = (int) tableModel.getValueAt(row, idCol);                        
+                        SQLiteDatabase.completTask(id, newValue);
+                    }
+                }
+            });
         }
     }
     
